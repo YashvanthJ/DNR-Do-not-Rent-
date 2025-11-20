@@ -1,0 +1,356 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Not Rent (DNR) List</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel">
+            <div class="settings-header">
+                <h2><i class="fas fa-cog"></i> Settings</h2>
+                <button id="closeSettings" class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <h3><i class="fab fa-google-drive"></i> Google Drive Sync</h3>
+                    <div id="authStatus" class="auth-status">
+                        <i class="fas fa-circle status-offline"></i>
+                        <span>Not connected to Google Drive</span>
+                    </div>
+                    
+                    <div id="setupSection" class="setup-section">
+                        <h4>Quick Setup</h4>
+                        <div class="form-group">
+                            <label for="sheetUrl">Google Sheet URL:</label>
+                            <input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+                            <small>Paste your Google Sheet URL here</small>
+                        </div>
+                        <button id="setupDrive" class="btn-sync">
+                            <i class="fas fa-link"></i> Connect to Sheet
+                        </button>
+                    </div>
+                    
+                    <button id="syncDrive" class="btn-sync" disabled>
+                        <i class="fas fa-sync-alt"></i> Sync Now
+                    </button>
+                    <button id="openSheet" class="btn-export" disabled>
+                        <i class="fas fa-external-link-alt"></i> Open Sheet
+                    </button>
+                    <div class="sync-status" id="syncStatusText">Last sync: Never</div>
+                    <p class="setting-description">Connect once, sync automatically forever</p>
+                </div>
+                <div class="setting-group">
+                    <h3><i class="fas fa-file-export"></i> Export Data</h3>
+                    <button id="exportExcel" class="btn-export">
+                        <i class="fas fa-file-excel"></i> Download Excel Sheet
+                    </button>
+                    <p class="setting-description">Download current DNR list as an Excel file</p>
+                </div>
+                <div class="setting-group">
+                    <h3><i class="fas fa-database"></i> Data Management</h3>
+                    <button id="clearOld" class="btn-clear">
+                        <i class="fas fa-trash"></i> Clear Expired Entries
+                    </button>
+                    <p class="setting-description">Remove entries older than 1 year</p>
+                </div>
+                <div class="setting-group">
+                    <h3><i class="fas fa-shield-alt"></i> Auto Sync</h3>
+                    <div class="toggle-group">
+                        <label for="autoSync">Auto-sync with Google Drive</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="autoSync" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p class="setting-description">Automatically sync data when changes are made</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay for settings -->
+        <div id="overlay" class="overlay"></div>
+
+        <header>
+            <div class="header-left">
+                <div class="logo">
+                    <img src="images/star image.jfif" alt="DNR Logo" class="logo-img">
+                </div>
+                <div class="header-title">
+                    <h1>Do Not Rent <span class="highlight">(DNR)</span></h1>
+                    <p class="header-subtitle">Designed by Yash</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="settingsBtn" class="btn-settings">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+                <button id="addBtn" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add New Entry
+                </button>
+            </div>
+        </header>
+        
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search by last name, first name...">
+                <button id="clearSearch" class="clear-search"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="filter-options">
+                <select id="statusFilter">
+                    <option value="all">All Entries</option>
+                    <option value="active">Active Only</option>
+                    <option value="expired">Expired Only</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="totalEntries">0</div>
+                    <div class="stat-label">Total Entries</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon active">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="activeEntries">0</div>
+                    <div class="stat-label">Active Entries</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon expired">
+                    <i class="fas fa-user-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="expiredEntries">0</div>
+                    <div class="stat-label">Expired Entries</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon sync">
+                    <i class="fas fa-sync-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value" id="lastSync">-</div>
+                    <div class="stat-label">Last Sync</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="list-container">
+            <div class="list-header">
+                <div class="header-item">#</div>
+                <div class="header-item">Guest Name</div>
+                <div class="header-item">Room No.</div>
+                <div class="header-item">Location</div>
+                <div class="header-item">Agent</div>
+                <div class="header-item">Date Added</div>
+                <div class="header-item">Expires</div>
+                <div class="header-item">Status</div>
+                <div class="header-item">Actions</div>
+            </div>
+            <div class="list-body">
+                <ul id="dnrList">
+                    <!-- List items will be dynamically added here -->
+                </ul>
+            </div>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3>No DNR Entries Yet</h3>
+            <p>Start by adding your first Do Not Rent entry to the list.</p>
+            <button id="emptyAddBtn" class="btn-primary">
+                <i class="fas fa-plus"></i> Add Your First Entry
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>All rights are reserved @2025 Yash </p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Add/Edit Modal -->
+    <div id="entryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle"><i class="fas fa-user-plus"></i> Add New DNR Entry</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="entryForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lastNameInput">Last Name *</label>
+                            <input type="text" id="lastNameInput" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="firstNameInput">First Name *</label>
+                            <input type="text" id="firstNameInput" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="roomInput">Room Number</label>
+                            <input type="text" id="roomInput" placeholder="e.g., 101, 202">
+                        </div>
+                        <div class="form-group">
+                            <label for="agentInput">Agent Name *</label>
+                            <input type="text" id="agentInput" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="locationSelect">Location</label>
+                        <select id="locationSelect">
+                            <option value="">Select Location</option>
+                            <option value="Front desk">Front desk</option>
+                            <option value="Lobby">Lobby</option>
+                            <option value="Parking">Parking</option>
+                            <option value="Room">Room</option>
+                            <option value="Side walk">Side walk</option>
+                            <option value="Floor">Floor</option>
+                            <option value="Back parking area">Back parking area</option>
+                            <option value="Public area">Public area</option>
+                            <option value="Stairs">Stairs</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reasonInput">Reason *</label>
+                        <textarea id="reasonInput" rows="4" placeholder="Enter detailed reason for DNR status..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
+                        <button type="submit" id="saveBtn" class="btn-primary">
+                            <i class="fas fa-save"></i> Save Entry
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reason Modal -->
+    <div id="reasonModal" class="modal">
+        <div class="modal-content reason-modal">
+            <div class="modal-header">
+                <h2 id="reasonTitle"><i class="fas fa-eye"></i> Reason Details</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="reason-header">
+                    <div class="guest-info">
+                        <h3 id="guestName"></h3>
+                        <p id="guestDetails"></p>
+                    </div>
+                </div>
+                <div class="reason-content">
+                    <h4>Reason for DNR:</h4>
+                    <p id="reasonText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Modal -->
+    <div id="setupModal" class="modal">
+        <div class="modal-content setup-modal">
+            <div class="modal-header">
+                <h2><i class="fab fa-google-drive"></i> Google Sheets Setup</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="setup-steps">
+                    <div class="step">
+                        <h3>Step 1: Create Google Sheet</h3>
+                        <p>Create a new Google Sheet or use an existing one</p>
+                        <button id="createNewSheet" class="btn-primary">
+                            <i class="fas fa-plus"></i> Create New Sheet
+                        </button>
+                    </div>
+                    <div class="step">
+                        <h3>Step 2: Share Sheet</h3>
+                        <p>Click "Share" and set to "Anyone with the link can edit"</p>
+                    </div>
+                    <div class="step">
+                        <h3>Step 3: Paste URL</h3>
+                        <p>Copy the sheet URL and paste it below:</p>
+                        <div class="form-group">
+                            <input type="text" id="setupSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+                        </div>
+                        <button id="confirmSetup" class="btn-sync">
+                            <i class="fas fa-link"></i> Connect Sheet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Modal -->
+    <div id="syncModal" class="modal">
+        <div class="modal-content sync-modal">
+            <div class="modal-header">
+                <h2><i class="fab fa-google-drive"></i> Google Drive Sync</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="syncStatus" class="sync-status">
+                    <div class="sync-icon">
+                        <i class="fas fa-sync-alt fa-spin"></i>
+                    </div>
+                    <h3>Syncing with Google Sheets</h3>
+                    <p>Please wait while we update your sheet...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+                <div id="syncSuccess" class="sync-success hidden">
+                    <div class="sync-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Sync Complete!</h3>
+                    <p>Your data has been successfully synced with Google Sheets.</p>
+                    <button class="btn-primary" id="syncSuccessClose">Continue</button>
+                </div>
+                <div id="syncError" class="sync-error hidden">
+                    <div class="sync-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <h3>Sync Failed</h3>
+                    <p id="errorMessage">Unable to sync with Google Sheets. Please check your connection.</p>
+                    <div class="error-actions">
+                        <button class="btn-secondary" id="retrySync">Retry</button>
+                        <button class="btn-primary" id="syncErrorClose">Continue</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="config.js"></script>
+    <script src="google-sheets-integration.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
